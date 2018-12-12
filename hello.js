@@ -1,7 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
 const url = "mongodb://localhost:27017/";
 
-const DB_NAME = 'javascript-mongodb-demo';
+const DB_NAME = 'javascript-mongodb-bulkwrite-demo';
 const COLLECTION_NAME = 'users';
 
 async function clearDb(db) {
@@ -32,14 +32,28 @@ async function printUsers(users) {
   })
 }
 
-async function updateUsers(users) {
-  console.log('------- updateUsers --------');
-  await users.updateOne({name: 'mongodb'}, {'$set': {name: 'mongodb', age: 200}})
-}
-
-async function deleteUsers(users) {
-  console.log('------- deleteUsers --------');
-  await users.deleteMany({})
+async function bulkWrite(users) {
+  console.log('------- bulkWrite --------');
+  await users.bulkWrite([
+    {
+      insertOne: {
+        document: {
+          name: 'bulk-insert1',
+          age: 100
+        }
+      },
+      updateOne: {
+        filter: {
+          name: 'mongodb'
+        },
+        update: {
+          $set: {
+            age: 200
+          }
+        }
+      }
+    }
+  ])
 }
 
 async function run() {
@@ -54,12 +68,8 @@ async function run() {
 
   await printUsers(users);
 
-  await updateUsers(users);
+  await bulkWrite(users);
 
-  await printUsers(users);
-
-  await deleteUsers(users);
-  
   await printUsers(users);
 
   await mongo.close()
